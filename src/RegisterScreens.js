@@ -15,11 +15,16 @@ import {
 import Main from './screens/Main';
 import AddOwner from './screens/AddOwner';
 import History from './screens/History';
+import Chart from './screens/Chart';
 
 const HistoryStack = createStackNavigator({
   History: {
     screen: History
   }
+});
+
+const ChartStack = createStackNavigator({
+  Chart
 });
 
 const MainStack = createStackNavigator(
@@ -72,6 +77,23 @@ const BuildListingTabNavigator = createBottomTabNavigator(
           return (
             <MaterialIcons
               name="history"
+              size={27}
+              color={focused ? '#15d97e' : '#dddee3'}
+            />
+          );
+        }
+
+        //   tabBarOnPress: onNormalTabbarPress
+      }
+    },
+    Chart: {
+      screen: ChartStack,
+      navigationOptions: {
+        headerTitle: 'Test',
+        tabBarIcon: ({ focused, tintColor }) => {
+          return (
+            <MaterialIcons
+              name="show-chart"
               size={27}
               color={focused ? '#15d97e' : '#dddee3'}
             />

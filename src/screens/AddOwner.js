@@ -8,6 +8,8 @@ import {
   TouchableOpacity
 } from 'react-native';
 import { TextInput, ScrollView } from 'react-native-gesture-handler';
+import axios from 'axios';
+import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import * as Permissions from 'expo-permissions';
 import { Feather } from '@expo/vector-icons';
@@ -15,6 +17,7 @@ import FormButton from '../components/FormButton';
 import NavigationService from '../utils/NavigationService';
 
 const STORAGE_KEY = 'oweme:data';
+const CURRENCIES = ['USD', 'EUR', 'MKD', 'GBP'];
 
 class AddOwner extends Component {
   static navigationOptions = ({ navigation }) => {
@@ -34,7 +37,8 @@ class AddOwner extends Component {
       purpose: '',
       days: '',
       amount: '',
-      isLoading: false
+      isLoading: false,
+      selected_currency: 0
     };
   }
 
@@ -71,6 +75,18 @@ class AddOwner extends Component {
       return v.toString(16);
     });
   }
+
+  getExchangeRate = () => {
+    let url = 'http://www.nbrm.mk/services/ExchangeRates.asmx/GetEXRates';
+    let date = this.getFormattedDate().replace(/\//g, '.');
+    axios
+      .post(url, {
+        startDate: date,
+        endDate: date,
+        isStateAuth: '3'
+      })
+      .then(resp => console.log(resp.data));
+  };
 
   _onSubmit = async () => {
     const { name, purpose, avatar, amount } = this.state;
@@ -196,7 +212,7 @@ class AddOwner extends Component {
   };
 
   render() {
-    const { isLoading, name, purpose, amount } = this.state;
+    const { isLoading, name, purpose, amount, selected_currency } = this.state;
     return (
       <View style={{ flex: 1, paddingTop: 15 }}>
         <ScrollView style={{ flex: 1, paddingHorizontal: 10 }}>
@@ -208,14 +224,69 @@ class AddOwner extends Component {
             value={name}
             onChangeText={text => this._onChangeValue('name', text)}
           />
-          <TextInput
-            placeholder="Amount"
-            style={styles.textInput}
-            keyboardType="numeric"
-            returnKeyType="done"
-            value={amount}
-            onChangeText={text => this._onChangeValue('amount', text)}
-          />
+          {
+            // <TextInput
+            //   placeholder="Amount"
+            //   style={styles.textInput}
+            //   keyboardType="numeric"
+            //   returnKeyType="done"
+            //   value={amount}
+            //   onChangeText={text => this._onChangeValue('amount', text)}
+            // />
+          }
+
+          <View
+            style={[
+              styles.textInput,
+              {
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                padding: 0,
+                paddingLeft: 5
+              }
+            ]}
+          >
+            <TextInput
+              placeholder="Amount"
+              style={{ flex: 1, padding: 5, height: '100%' }}
+              keyboardType="numeric"
+              returnKeyType="done"
+              value={amount}
+              onChangeText={text => this._onChangeValue('amount', text)}
+            />
+
+            <TouchableOpacity
+              style={{
+                height: '100%',
+                width: 70,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#b9b5b5',
+                borderTopRightRadius: 5,
+                borderBottomRightRadius: 5
+              }}
+              onPress={async () => {
+                await Haptics.selectionAsync();
+                this.getExchangeRate();
+                this.setState({
+                  selected_currency:
+                    selected_currency === CURRENCIES.length - 1
+                      ? 0
+                      : selected_currency + 1
+                });
+              }}
+            >
+              <Text
+                style={{
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  color: 'grey'
+                }}
+              >
+                {CURRENCIES[selected_currency]}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           <TextInput
             placeholder="Purpose"
